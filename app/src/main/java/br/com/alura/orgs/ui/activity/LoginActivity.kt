@@ -42,6 +42,7 @@ class LoginActivity : AppCompatActivity() {
                         preferences[usuarioLogadoPrefereces] = usuario.id
                     }
                     vaiPara(ListaProdutosActivity::class.java)
+                    finish()
                 }?:Toast.makeText(
                     this@LoginActivity,
                     "Falha na autenticação",
