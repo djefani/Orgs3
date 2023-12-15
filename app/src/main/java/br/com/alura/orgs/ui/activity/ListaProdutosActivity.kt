@@ -15,6 +15,9 @@ import br.com.alura.orgs.database.preferences.usuarioLogadoPrefereces
 import br.com.alura.orgs.databinding.ActivityListaProdutosActivityBinding
 import br.com.alura.orgs.extensions.vaiPara
 import br.com.alura.orgs.ui.recyclerview.adapter.ListaProdutosAdapter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 
@@ -38,23 +41,35 @@ class ListaProdutosActivity : AppCompatActivity() {
         configuraRecyclerView()
         configuraFab()
         lifecycleScope.launch {
-            launch {
-                produtoDao.buscaTodos().collect { produtos ->
-                    adapter.atualiza(produtos)
-                }
-            }
 
             launch {
-                dataStore.data.collect { preferences ->
-                    preferences[usuarioLogadoPrefereces]?.let { usuarioId ->
-                        launch {
-                            usuarioDao.buscaPorId(usuarioId).collect {
-                                Log.i("ListaProdutos", "onCreate: $it")
-                            }
-                        }
-                    }?: vaiParaLogin()
+                verificaUsuarioLogado()
+            }
+        }
+    }
+
+    private suspend fun verificaUsuarioLogado() {
+        dataStore.data.collect { preferences ->
+            preferences[usuarioLogadoPrefereces]?.let { usuarioId ->
+                buscaUsuario(usuarioId)
+            } ?: vaiParaLogin()
+        }
+    }
+
+    private fun buscaUsuario(usuarioId: String) {
+        lifecycleScope.launch {
+            usuarioDao.buscaPorId(usuarioId).firstOrNull()?.let {
+                launch {
+                    buscaProdutosUsuario()
                 }
             }
+        }
+    }
+
+
+    private suspend fun buscaProdutosUsuario() {
+        produtoDao.buscaTodos().collect { produtos ->
+            adapter.atualiza(produtos)
         }
     }
 
@@ -64,16 +79,20 @@ class ListaProdutosActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId){
+        when (item.itemId) {
             R.id.menu_lista_produtos_sair_do_app -> {
                 lifecycleScope.launch {
-                    dataStore.edit { preferences ->
-                        preferences.remove(usuarioLogadoPrefereces)
-                    }
+                    deslogaUsuario()
                 }
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private suspend fun deslogaUsuario() {
+        dataStore.edit { preferences ->
+            preferences.remove(usuarioLogadoPrefereces)
+        }
     }
 
     private fun vaiParaLogin() {
