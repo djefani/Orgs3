@@ -6,7 +6,10 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import br.com.alura.orgs.database.AppDatabase
+import br.com.alura.orgs.database.preferences.dataStore
+import br.com.alura.orgs.database.preferences.usuarioLogadoPrefereces
 import br.com.alura.orgs.databinding.ActivityListaProdutosActivityBinding
+import br.com.alura.orgs.extensions.vaiPara
 import br.com.alura.orgs.ui.recyclerview.adapter.ListaProdutosAdapter
 import kotlinx.coroutines.launch
 
@@ -36,12 +39,19 @@ class ListaProdutosActivity : AppCompatActivity() {
                     adapter.atualiza(produtos)
                 }
             }
-            intent.getStringExtra("CHAVE_USUARIO_ID")?.let{usuarioId ->
-                usuarioDao.buscaPorId(usuarioId).collect{
-                    Log.i("ListaProdutos", "onCreate: $it")
-                }
+
+            dataStore.data.collect { preferences ->
+                preferences[usuarioLogadoPrefereces]?.let { usuarioId ->
+                    usuarioDao.buscaPorId(usuarioId).collect {
+                        Log.i("ListaProdutos", "onCreate: $it")
+                    }
+                }?: vaiParaLogin()
             }
         }
+    }
+
+    private fun vaiParaLogin() {
+        vaiPara(LoginActivity::class.java)
     }
 
     private fun configuraFab() {
