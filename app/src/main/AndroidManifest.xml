@@ -11,6 +11,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Orgs">
         <activity
+            android:name=".ui.activity.TodosProdutosActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.PerfilUsuarioActivity"
+            android:exported="false"
+            android:label="Perfil" />
+        <activity
             android:name=".ui.activity.FormularioCadastroUsuarioActivity"
             android:label="Cadastrar usuário" />
         <activity

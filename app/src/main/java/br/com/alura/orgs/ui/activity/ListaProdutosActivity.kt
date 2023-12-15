@@ -44,15 +44,15 @@ class ListaProdutosActivity : UsuarioBaseActivity() {
             launch {
                 usuario
                     .filterNotNull()
-                    .collect {
-                        buscaProdutosUsuario()
+                    .collect {usuario ->
+                        buscaProdutosUsuario(usuario.id)
                     }
             }
         }
     }
 
-    private suspend fun buscaProdutosUsuario() {
-        produtoDao.buscaTodos().collect { produtos ->
+    private suspend fun buscaProdutosUsuario(usuarioId: String) {
+        produtoDao.buscaTodosDoUsuario(usuarioId).collect { produtos ->
             adapter.atualiza(produtos)
         }
     }
@@ -64,12 +64,14 @@ class ListaProdutosActivity : UsuarioBaseActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.menu_lista_produtos_sair_do_app -> {
-                lifecycleScope.launch {
-                    deslogaUsuario()
-                }
+            R.id.menu_lista_produtos_perfil_usuario -> {
+                vaiPara(PerfilUsuarioActivity::class.java)
+            }
+            R.id.menu_lista_produtos_todos_produtos -> {
+                vaiPara(TodosProdutosActivity::class.java)
             }
         }
+
         return super.onOptionsItemSelected(item)
     }
 
